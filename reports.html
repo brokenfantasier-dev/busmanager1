@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Chuyến Đi - Hệ Thống Giám Sát Hành Khách</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .report-section { margin-bottom: 1.5rem; }
+        .timeline-bar { display: flex; height: 2rem; border-radius: var(--radius); overflow: hidden; background-color: hsl(var(--muted));}
+        .timeline-segment { height: 100%; text-align: center; color: white; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: width 0.5s ease;}
+        .timeline-segment.check-in { background-color: orange; }
+        .timeline-segment.running { background-color: hsl(var(--primary)); }
+        .timeline-segment.stopped { background-color: hsl(var(--destructive)); }
+        .timeline-segment.check-out { background-color: #ff9800; }
+
+        .report-log-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid hsl(var(--border));
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .report-log-item:last-child { border-bottom: none; }
+        .report-log-item .details { color: hsl(var(--muted-foreground)); }
+    </style>
+</head>
+<body>
+    <main style="max-width: 1200px; margin: auto;">
+        <h1 style="font-size: 2rem; margin-bottom: 1rem; color: hsl(var(--primary)); display:flex; align-items:center; gap: 1rem;">
+           <a href="dashboard.html" style="color: hsl(var(--primary));"><i class="fas fa-arrow-left"></i></a>
+           Lịch sử chuyến đi
+        </h1>
+
+        <div class="card">
+            <div class="card-content">
+                <label for="trip-selector" style="font-size: 0.9rem; color: hsl(var(--muted-foreground));">Chọn chuyến đi để xem báo cáo:</label>
+                <select id="trip-selector" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; background-color: hsl(var(--input)); border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); border-radius: var(--radius);"></select>
+            </div>
+        </div>
+
+        <div id="report-content" class="report-section" style="margin-top: 1rem;">
+            <!-- Content will be injected here by JS -->
+        </div>
+
+    </main>
+
+    <script>
+        function formatDuration(seconds) {
+            if (isNaN(seconds) || seconds < 0) return '00:00:00';
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.round(seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function formatDate(dateString) {
+            if(!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN');
+        }
+
+        function renderReport(tripData) {
+            const reportContent = document.getElementById('report-content');
+            if (!tripData) {
+                reportContent.innerHTML = '<div class="card"><div class="card-content" style="text-align: center; color: hsl(var(--muted-foreground));">Không có dữ liệu cho chuyến đi này.</div></div>';
+                return;
+            }
+
+            const { tripId, startTime, endTime, totalTripDuration, vehicleRunningDuration, midRoutePassengers, stopHistory } = tripData;
+            
+            // Timeline Bar
+            let timelineHTML = '';
+            if (totalTripDuration > 0) {
+                const segments = [];
+                let currentTime = 0;
+
+                // 1. Check-in
+                segments.push({ duration: 10, type: 'check-in', label: 'Chờ ổn định' });
+                currentTime += 10;
+                
+                let lastEventTime = 0;
+                const sortedStops = [...stopHistory].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                sortedStops.forEach(stop => {
+                    const stopStartTime = (new Date(stop.timestamp).getTime() - new Date(startTime).getTime()) / 1000 - stop.duration;
+                    const runningDurationBeforeStop = stopStartTime - lastEventTime;
+                    
+                    if (runningDurationBeforeStop > 0.1) {
+                         segments.push({ duration: runningDurationBeforeStop, type: 'running', label: 'Xe chạy' });
+                    }
+                    segments.push({ duration: stop.duration, type: 'stopped', label: `Dừng (${stop.location})`});
+                    lastEventTime = stopStartTime + stop.duration;
+                });
+                
+                const remainingRunningTime = vehicleRunningDuration - segments.filter(s => s.type === 'running').reduce((acc, s) => acc + s.duration, 0);
+                if (remainingRunningTime > 0.1) {
+                    segments.push({ duration: remainingRunningTime, type: 'running', label: 'Xe chạy' });
+                }
+
+                // 5. Checkout
+                segments.push({ duration: 10, type: 'check-out', label: 'Kiểm tra' });
+
+                timelineHTML = segments.map(seg => {
+                     const width = (seg.duration / totalTripDuration) * 100;
+                     return `<div class="timeline-segment ${seg.type}" style="width: ${width}%;" title="${seg.label}: ${formatDuration(seg.duration)}"></div>`;
+                }).join('');
+            }
+
+
+            reportContent.innerHTML = `
+                <div class="card report-section">
+                    <div class="card-header"><h3>Tóm tắt chuyến đi</h3></div>
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-card"><h4>Mã Chuyến</h4><p class="stat-value" style="font-size: 1.2rem;">${tripId || 'N/A'}</p></div>
+                            <div class="stat-card"><h4>Bắt đầu</h4><p class="stat-value" style="font-size: 1.2rem;">${formatDate(startTime)}</p></div>
+                            <div class="stat-card"><h4>Kết thúc</h4><p class="stat-value" style="font-size: 1.2rem;">${formatDate(endTime)}</p></div>
+                            <div class="stat-card"><h4>Tổng Thời Gian</h4><p class="stat-value" style="font-size: 1.2rem;">${formatDuration(totalTripDuration)}</p></div>
+                            <div class="stat-card"><h4>Xe Chạy</h4><p class="stat-value" style="font-size: 1.2rem;">${formatDuration(vehicleRunningDuration)}</p></div>
+                        </div>
+                        <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Sơ đồ chuyến đi</h4>
+                        <div class="timeline-bar">${timelineHTML}</div>
+                    </div>
+                </div>
+
+                <div class="card report-section">
+                    <div class="card-header"><h3>Nhật ký hành khách dọc đường</h3></div>
+                    <div class="card-content" style="padding: 0;">
+                        ${midRoutePassengers.length > 0 ? midRoutePassengers.map(p => `
+                            <div class="report-log-item">
+                                <span>${formatDate(p.timestamp)}</span>
+                                <span><strong style="color:hsl(var(--primary));">+${p.so_nguoi}</strong> hành khách lên xe</span>
+                                <span class="details">GPS: ${p.gps.lat}, ${p.gps.lng}</span>
+                            </div>
+                        `).join('') : '<p style="text-align:center; padding: 1rem; color: hsl(var(--muted-foreground));">Không có hành khách lên dọc đường.</p>'}
+                    </div>
+                </div>
+
+                <div class="card report-section">
+                    <div class="card-header"><h3>Lịch sử dừng</h3></div>
+                    <div class="card-content" style="padding: 0;">
+                         ${stopHistory.length > 0 ? stopHistory.map(s => `
+                            <div class="report-log-item">
+                                <span>${formatDate(s.timestamp)}</span>
+                                <span>Dừng tại <strong>${s.location}</strong> trong <strong>${formatDuration(s.duration)}</strong></span>
+                                <span class="details">Lên: <span style="color:hsl(var(--primary));">${s.passengersOn}</span>, Xuống: <span style="color:hsl(var(--destructive));">${s.passengersOff}</span></span>
+                            </div>
+                        `).join('') : '<p style="text-align:center; padding: 1rem; color: hsl(var(--muted-foreground));">Không có điểm dừng nào.</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Basic Auth Check for Admin
+            const userString = sessionStorage.getItem('user');
+            if (!userString || JSON.parse(userString).role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const tripSelector = document.getElementById('trip-selector');
+            const tripKeys = Object.keys(localStorage).filter(key => key.startsWith('trip_'));
+
+            if(tripKeys.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'Không có chuyến đi nào được lưu trữ';
+                tripSelector.appendChild(option);
+                renderReport(null);
+                return;
+            }
+
+            tripKeys.forEach(key => {
+                const tripId = key.replace('trip_', '');
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = tripId;
+                tripSelector.appendChild(option);
+            });
+
+            tripSelector.addEventListener('change', (event) => {
+                const selectedKey = event.target.value;
+                const tripData = JSON.parse(localStorage.getItem(selectedKey));
+                renderReport(tripData);
+            });
+
+            // Render the first report by default
+            if(tripKeys.length > 0) {
+                const latestTripKey = tripKeys.sort().reverse()[0];
+                tripSelector.value = latestTripKey;
+                const tripData = JSON.parse(localStorage.getItem(latestTripKey));
+                renderReport(tripData);
+            }
+        });
+    </script>
+</body>
+</html>
+
+    

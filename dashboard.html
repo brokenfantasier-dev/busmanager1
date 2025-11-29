@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hệ Thống Giám Sát Hành Khách</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Desktop Navigation -->
+  <nav class="desktop-nav">
+    <div class="nav-header">
+      <i class="fas fa-bus"></i>
+      <h2>Giám sát xe</h2>
+    </div>
+    <div class="user-profile">
+      <p id="username-display" class="font-semibold"></p>
+      <p id="user-role-display" class="text-sm"></p>
+    </div>
+    <ul>
+      <li><a href="#" data-target="dashboard" class="active"><i class="fas fa-chart-area"></i> Bảng điều khiển</a></li>
+      <li><a href="#" data-target="camera"><i class="fas fa-video"></i> Camera</a></li>
+      <li class="admin-only" style="display: none;"><a href="reports.html"><i class="fas fa-file-alt"></i> Báo cáo</a></li>
+      <li class="admin-only" style="display: none;"><a href="#"><i class="fas fa-map"></i> Demo Lộ trình</a></li>
+    </ul>
+    <div class="nav-footer">
+      <a href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Ngắt kết nối</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Trip Control Panel -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-power-off"></i> Điều khiển chuyến đi</h3>
+            <div id="activityStatus" class="status-badge ready"><i class="fas fa-power-off"></i> Chờ</div>
+        </div>
+        <div class="card-content trip-controls">
+            <button id="checkinButton"><i class="fas fa-play"></i> Bắt đầu</button>
+            <button id="pauseButton" disabled><i class="fas fa-pause"></i> Tạm dừng</button>
+            <button id="checkoutButton" disabled><i class="fas fa-bus"></i> Kết thúc</button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div id="time-card-container" class="card stat-card">
+            <div id="running-time-panel">
+                <div class="card-header">
+                    <h4><i class="fas fa-clock"></i> Thời gian xe chạy</h4>
+                </div>
+                <div class="card-content">
+                    <p id="vehicleRunningTimeDisplay" class="stat-value">00:00:00</p>
+                </div>
+            </div>
+            <div id="countdown-panel" style="display: none;">
+                <div class="card-header">
+                    <h4 id="countdown-label"></h4>
+                </div>
+                <div class="card-content">
+                    <p id="countdown-timer" class="stat-value font-mono"></p>
+                </div>
+            </div>
+        </div>
+        <div class="card stat-card">
+            <div class="card-header">
+                <h4><i class="fas fa-sign-in-alt"></i> Số khách lên xe</h4>
+            </div>
+            <div class="card-content">
+                <p id="getOnCount" class="stat-value">0</p>
+            </div>
+        </div>
+        <div class="card stat-card">
+            <div class="card-header">
+                <h4><i class="fas fa-sign-out-alt"></i> Số khách xuống xe</h4>
+            </div>
+            <div class="card-content">
+                <p id="getOffCount" class="stat-value destructive">0</p>
+            </div>
+        </div>
+        <div class="card stat-card" id="passengers-on-board-card">
+            <div class="card-header">
+                <h4><i class="fas fa-users"></i> Số khách trên xe</h4>
+            </div>
+            <div class="card-content">
+                <p id="passengersOnBoard" class="stat-value">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Logs -->
+    <div class="main-grid">
+        <div class="card admin-only" style="display: none;">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-line"></i> Luồng hành khách</h3>
+            </div>
+            <div class="card-content chart-container">
+                <canvas id="flowChart"></canvas>
+            </div>
+        </div>
+        <div class="card admin-only" style="display: none;">
+            <div classs="card-header">
+                 <h3><i class="fas fa-chart-area"></i> Số lượng tích lũy</h3>
+            </div>
+            <div class="card-content chart-container">
+                <canvas id="cumulativeChart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-terminal"></i> Bảng tin hệ thống</h3>
+            </div>
+            <div class="card-content">
+                <div id="logEntries" class="log-entries"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-volume-up"></i> Phát thanh (TTS)</h3>
+            </div>
+            <div class="card-content tts-controls">
+                <textarea id="tts-input" placeholder="Nhập nội dung thông báo..."></textarea>
+                <button id="speakButton">Phát</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin only GPS panel -->
+    <div class="card admin-only" style="display: none; margin-top: 1rem;">
+      <div class="card-header">
+        <h3><i class="fas fa-cog"></i> Cấu hình Demo</h3>
+      </div>
+      <div class="card-content gps-controls">
+        <input id="latInput" placeholder="Vĩ độ" value="11.9405">
+        <input id="lngInput" placeholder="Kinh độ" value="108.4357">
+        <button id="manualGpsButton">Cập nhật GPS</button>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav">
+      <a href="#" data-target="dashboard" class="active"><i class="fas fa-chart-area"></i><span>Bảng điều khiển</span></a>
+      <a href="#" data-target="camera"><i class="fas fa-video"></i><span>Camera</span></a>
+      <a href="reports.html" class="admin-only" style="display: none;"><i class="fas fa-file-alt"></i><span>Báo cáo</span></a>
+      <a href="#" id="mobileLogoutButton"><i class="fas fa-sign-out-alt"></i><span>Đăng xuất</span></a>
+  </nav>
+
+  <!-- Dialogs -->
+  <div id="stopDialog" class="dialog-overlay" style="display: none;">
+      <div class="dialog-content card">
+          <h3 class="dialog-title">🛑 Tạm dừng</h3>
+          <p class="dialog-description">Địa điểm: Điểm dừng - Bảo Lộc</p>
+          <div class="dialog-stats">
+              <div>
+                  <p>Thời gian dừng</p>
+                  <span id="stopTimerDisplay">00:00:00</span>
+              </div>
+              <div>
+                  <p>Khách trên xe</p>
+                  <span id="stopDialogPassengerCount">0</span>
+              </div>
+              <div>
+                  <p class="primary">Khách lên</p>
+                  <span id="stopDialogPassengersOn" class="primary">+0</span>
+              </div>
+              <div>
+                  <p class="destructive">Khách xuống</p>
+                  <span id="stopDialogPassengersOff" class="destructive">-0</span>
+              </div>
+          </div>
+          <button id="resumeButton" class="dialog-action">Tiếp tục hành trình ✅</button>
+      </div>
+  </div>
+
+  <div id="alert-dialog" class="dialog-overlay" style="display: none;">
+    <div class="dialog-content card">
+        <div id="alert-icon-container"></div>
+        <h3 id="alert-title" class="dialog-title"></h3>
+        <p id="alert-message" class="dialog-description"></p>
+        <button id="alert-close-button" class="dialog-action">Đã hiểu</button>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="tts.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>

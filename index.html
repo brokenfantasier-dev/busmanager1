@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - Giám Sát Hành Khách</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
+     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+
+    <div class="card login-container">
+        <div class="card-header">
+            <h1 class="text-center">
+                <i class="fas fa-bus"></i> Đăng Nhập Hệ Thống
+            </h1>
+        </div>
+        <div class="card-content">
+            <form id="loginForm">
+                <div id="error-message" class="alert destructive" style="display: none;"></div>
+                <div class="input-group">
+                    <label for="username">Mã Định Danh</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Mật Khẩu</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="login-btn">Kết Nối</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
+
+    
