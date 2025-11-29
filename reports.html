@@ -162,7 +162,8 @@
             // Basic Auth Check for Admin
             const userString = sessionStorage.getItem('user');
             if (!userString || JSON.parse(userString).role !== 'admin') {
-                window.location.href = 'index.html';
+                document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50px;">TRUY CẬP BỊ TỪ CHỐI</h1>';
+                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
                 return;
             }
 
@@ -202,5 +203,3 @@
     </script>
 </body>
 </html>
-
-    

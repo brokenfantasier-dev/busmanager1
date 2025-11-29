@@ -430,8 +430,27 @@ main {
 }
 
 .gps-controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
+}
+
+.gps-controls input {
+    grid-column: 1 / -1;
+}
+
+.gps-controls button {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    padding: 0.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.gps-controls button:hover {
+    background-color: hsl(var(--secondary) / 0.8);
 }
 
 /* --- Dialogs --- */

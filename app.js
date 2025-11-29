@@ -54,6 +54,7 @@ const elements = {
     ttsInput: document.getElementById('tts-input'),
     speakButton: document.getElementById('speakButton'),
     manualGpsButton: document.getElementById('manualGpsButton'),
+    mockDataButton: document.getElementById('mockDataButton'),
     latInput: document.getElementById('latInput'),
     lngInput: document.getElementById('lngInput'),
     map: document.getElementById('map'),
@@ -406,11 +407,13 @@ function renderUI() {
         elements.countdownPanel.style.display = 'block';
         elements.countdownLabel.textContent = 'Chờ ổn định';
         elements.countdownTimer.textContent = formatCountdown(state.checkinCountdown);
+        elements.countdownTimer.style.color = 'orange';
     } else if (state.tripState === 'checking-out') {
         elements.runningTimePanel.style.display = 'none';
         elements.countdownPanel.style.display = 'block';
         elements.countdownLabel.textContent = 'Kiểm tra cuối chuyến';
         elements.countdownTimer.textContent = formatCountdown(state.checkoutCountdown);
+        elements.countdownTimer.style.color = 'orange';
     } else {
         elements.runningTimePanel.style.display = 'block';
         elements.countdownPanel.style.display = 'none';
@@ -488,17 +491,16 @@ function initializeApp() {
       try {
         const response = await fetch(`${API_BASE}/status`);
         if (!response.ok) {
-            console.warn(`Lỗi kết nối backend: ${response.status}. Chuyển sang chế độ demo.`);
-            addLog(`Lỗi kết nối backend, chuyển sang dữ liệu giả.`, 'WARNING');
-            mockDataGenerator();
+            console.warn(`Lỗi kết nối backend: ${response.status}.`);
+            // Don't switch to demo mode automatically
+            addLog(`Lỗi kết nối backend, không nhận được dữ liệu.`, 'WARNING');
         } else {
             const data = await response.json();
             handleDataFetch(data);
         }
       } catch (e) {
-        console.warn(`Lỗi kết nối backend: ${e.message}. Chuyển sang chế độ demo.`);
-        addLog(`Lỗi kết nối backend, chuyển sang dữ liệu giả.`, 'WARNING');
-        mockDataGenerator();
+        console.warn(`Lỗi kết nối backend: ${e.message}.`);
+        addLog(`Lỗi kết nối backend, không nhận được dữ liệu.`, 'WARNING');
       }
     }, DATA_FETCH_INTERVAL);
 
@@ -538,6 +540,9 @@ function initializeApp() {
         });
     }
 
+    if (elements.mockDataButton) {
+        elements.mockDataButton.addEventListener('click', mockDataGenerator);
+    }
 }
 
 function mockDataGenerator() {
@@ -546,12 +551,16 @@ function mockDataGenerator() {
     const newGetOn = Math.random() > 0.5 ? Math.floor(Math.random() * 3) : 0;
     const newGetOff = (state.counts.getOn > state.counts.getOff) && Math.random() > 0.6 ? 1 : 0;
 
-    if (newGetOn === 0 && newGetOff === 0) return;
+    if (newGetOn === 0 && newGetOff === 0 && state.counts.getOn > 0) { // Ensure there's some activity if possible
+        mockDataGenerator(); // try again
+        return;
+    }
     
     const mockData = {
         get_on: state.counts.getOn + newGetOn,
         get_off: state.counts.getOff + newGetOff
     };
+    addLog(`Tạo dữ liệu giả: Lên: ${newGetOn}, Xuống: ${newGetOff}`, 'MANUAL');
     handleDataFetch(mockData);
 }
 
