@@ -34,24 +34,26 @@
         </div>
     </div>
     <script>
-        const toggleButton = document.getElementById('stream-toggle-button');
-        const cameraStream = document.getElementById('camera-stream');
-        const noSignalOverlay = document.getElementById('no-signal-overlay');
-        let isStreaming = false;
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('stream-toggle-button');
+            const cameraStream = document.getElementById('camera-stream');
+            const noSignalOverlay = document.getElementById('no-signal-overlay');
+            let isStreaming = false;
 
-        toggleButton.addEventListener('click', () => {
-            isStreaming = !isStreaming;
-            if (isStreaming) {
-                cameraStream.style.display = 'block';
-                noSignalOverlay.style.display = 'none';
-                toggleButton.innerHTML = '<i class="fas fa-video-slash"></i> Dừng truyền dữ liệu';
-                toggleButton.style.backgroundColor = 'hsl(var(--destructive))';
-            } else {
-                cameraStream.style.display = 'none';
-                noSignalOverlay.style.display = 'flex';
-                toggleButton.innerHTML = '<i class="fas fa-video"></i> Bắt đầu truyền dữ liệu';
-                toggleButton.style.backgroundColor = 'hsl(var(--primary))';
-            }
+            toggleButton.addEventListener('click', () => {
+                isStreaming = !isStreaming;
+                if (isStreaming) {
+                    cameraStream.style.display = 'block';
+                    noSignalOverlay.style.display = 'none';
+                    toggleButton.innerHTML = '<i class="fas fa-video-slash"></i> Dừng truyền dữ liệu';
+                    toggleButton.style.backgroundColor = 'hsl(var(--destructive))';
+                } else {
+                    cameraStream.style.display = 'none';
+                    noSignalOverlay.style.display = 'flex';
+                    toggleButton.innerHTML = '<i class="fas fa-video"></i> Bắt đầu truyền dữ liệu';
+                    toggleButton.style.backgroundColor = 'hsl(var(--primary))';
+                }
+            });
         });
     </script>
 </body>
