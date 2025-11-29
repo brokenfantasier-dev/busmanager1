@@ -22,25 +22,33 @@ function handleLogout() {
 
 function checkAuth() {
     const userString = sessionStorage.getItem('user');
-    if (!userString) {
+    if (!userString && !window.location.pathname.endsWith('index.html')) {
         window.location.href = 'index.html';
         return;
     }
-    const user = JSON.parse(userString);
-    
-    // Display user info
-    const usernameDisplay = document.getElementById('username-display');
-    const userRoleDisplay = document.getElementById('user-role-display');
-    if (usernameDisplay) usernameDisplay.textContent = user.username;
-    if (userRoleDisplay) userRoleDisplay.textContent = user.role;
+    if (userString && window.location.pathname.endsWith('index.html')) {
+         window.location.href = 'dashboard.html';
+        return;
+    }
 
-    // Show admin-only elements if user is admin
-    if (user.role === 'admin') {
-        document.querySelectorAll('.admin-only').forEach(el => {
-            el.style.display = 'list-item'; // or 'block', 'flex' depending on the element
-        });
+    if (userString) {
+        const user = JSON.parse(userString);
+        
+        // Hiển thị thông tin người dùng
+        const usernameDisplay = document.getElementById('username-display');
+        const userRoleDisplay = document.getElementById('user-role-display');
+        if (usernameDisplay) usernameDisplay.textContent = user.username;
+        if (userRoleDisplay) userRoleDisplay.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+        // Hiển thị các thành phần chỉ dành cho admin nếu người dùng là admin
+        if (user.role !== 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
     }
 }
+
 
 function isAdmin() {
     const userString = sessionStorage.getItem('user');
@@ -50,7 +58,7 @@ function isAdmin() {
 }
 
 
-// Attach event listeners
+// Gắn các bộ lắng nghe sự kiện
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
