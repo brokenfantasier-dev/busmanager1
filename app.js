@@ -56,6 +56,7 @@ const elements = {
     manualGpsButton: document.getElementById('manualGpsButton'),
     latInput: document.getElementById('latInput'),
     lngInput: document.getElementById('lngInput'),
+    map: document.getElementById('map'),
     // Dialogs
     stopDialog: document.getElementById('stopDialog'),
     stopTimerDisplay: document.getElementById('stopTimerDisplay'),
@@ -96,6 +97,102 @@ function initializeCharts() {
       options: chartOptions
     });
 }
+
+// --- Google Map ---
+function initMap() {
+    if (isAdmin() && elements.map) {
+        const initialLatLng = { lat: 11.9405, lng: 108.4357 };
+        window.map = new google.maps.Map(elements.map, {
+            center: initialLatLng,
+            zoom: 15,
+            styles: [ // Dark mode styles
+                { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                {
+                    featureType: 'administrative.locality',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'poi',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#263c3f' }]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#6b9a76' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#38414e' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#212a37' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#9ca5b3' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#746855' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#1f2835' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#f3d19c' }]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#2f3948' }]
+                },
+                {
+                    featureType: 'transit.station',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#17263c' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#515c6d' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.stroke',
+                    stylers: [{ color: '#17263c' }]
+                }
+            ]
+        });
+        window.marker = new google.maps.Marker({
+            position: initialLatLng,
+            map: window.map,
+        });
+    }
+}
+
 
 // --- CORE LOGIC ---
 function addLog(message, type) {
@@ -379,7 +476,9 @@ function formatCountdown(totalSeconds) {
 // --- EVENT LISTENERS ---
 function initializeApp() {
     checkAuth();
-    initializeCharts();
+    if(isAdmin()) {
+        initializeCharts();
+    }
     renderUI();
     addLog('Hệ thống giám sát đã sẵn sàng.', 'SYSTEM');
     
@@ -389,7 +488,6 @@ function initializeApp() {
       try {
         const response = await fetch(`${API_BASE}/status`);
         if (!response.ok) {
-            // If backend fails, start mocking data for demo
             console.warn(`Lỗi kết nối backend: ${response.status}. Chuyển sang chế độ demo.`);
             addLog(`Lỗi kết nối backend, chuyển sang dữ liệu giả.`, 'WARNING');
             mockDataGenerator();
@@ -398,7 +496,6 @@ function initializeApp() {
             handleDataFetch(data);
         }
       } catch (e) {
-        // If fetch itself fails, start mocking data for demo
         console.warn(`Lỗi kết nối backend: ${e.message}. Chuyển sang chế độ demo.`);
         addLog(`Lỗi kết nối backend, chuyển sang dữ liệu giả.`, 'WARNING');
         mockDataGenerator();
@@ -428,19 +525,19 @@ function initializeApp() {
     });
     
     // GPS Listener (admin only)
-    elements.manualGpsButton.addEventListener('click', () => {
-        addLog(`GPS được cập nhật thủ công: ${elements.latInput.value}, ${elements.lngInput.value}`, 'MANUAL');
-    });
+    if (elements.manualGpsButton) {
+        elements.manualGpsButton.addEventListener('click', () => {
+            const lat = elements.latInput.value;
+            const lng = elements.lngInput.value;
+            addLog(`GPS được cập nhật thủ công: ${lat}, ${lng}`, 'MANUAL');
+            if (window.map && window.marker) {
+                const newLatLng = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
+                window.marker.setPosition(newLatLng);
+                window.map.setCenter(newLatLng);
+            }
+        });
+    }
 
-    // Nav Listeners
-    document.querySelectorAll('nav a[data-target]').forEach(a => {
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        const target = e.currentTarget.dataset.target;
-        // This is a simplified SPA-like behavior. Hide/show would be better.
-        // For now, we do nothing as it's a single page.
-      });
-    });
 }
 
 function mockDataGenerator() {

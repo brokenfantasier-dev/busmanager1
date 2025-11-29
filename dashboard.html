@@ -29,8 +29,8 @@
       <p id="user-role-display" class="text-sm"></p>
     </div>
     <ul>
-      <li><a href="#" data-target="dashboard" class="active"><i class="fas fa-chart-area"></i> Bảng điều khiển</a></li>
-      <li><a href="#" data-target="camera"><i class="fas fa-video"></i> Camera</a></li>
+      <li><a href="dashboard.html" data-target="dashboard" class="active"><i class="fas fa-chart-area"></i> Bảng điều khiển</a></li>
+      <li><a href="camera.html" data-target="camera"><i class="fas fa-video"></i> Camera</a></li>
       <li class="admin-only" style="display: none;"><a href="reports.html"><i class="fas fa-file-alt"></i> Báo cáo</a></li>
       <li class="admin-only" style="display: none;"><a href="#"><i class="fas fa-map"></i> Demo Lộ trình</a></li>
     </ul>
@@ -99,6 +99,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- Map for Admin -->
+    <div id="map" class="admin-only" style="display: none;"></div>
 
     <!-- Charts and Logs -->
     <div class="main-grid">
@@ -152,8 +155,8 @@
   
   <!-- Mobile Navigation -->
   <nav class="mobile-nav">
-      <a href="#" data-target="dashboard" class="active"><i class="fas fa-chart-area"></i><span>Bảng điều khiển</span></a>
-      <a href="#" data-target="camera"><i class="fas fa-video"></i><span>Camera</span></a>
+      <a href="dashboard.html" data-target="dashboard" class="active"><i class="fas fa-chart-area"></i><span>Bảng điều khiển</span></a>
+      <a href="camera.html" data-target="camera"><i class="fas fa-video"></i><span>Camera</span></a>
       <a href="reports.html" class="admin-only" style="display: none;"><i class="fas fa-file-alt"></i><span>Báo cáo</span></a>
       <a href="#" id="mobileLogoutButton"><i class="fas fa-sign-out-alt"></i><span>Đăng xuất</span></a>
   </nav>
@@ -198,6 +201,7 @@
   <script src="tts.js"></script>
   <script src="auth.js"></script>
   <script src="app.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 
 </body>
 </html>
