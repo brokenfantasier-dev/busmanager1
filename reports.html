@@ -45,7 +45,7 @@
         </div>
 
         <div id="report-content" class="report-section" style="margin-top: 1rem;">
-            <!-- Content will be injected here by JS -->
+            <!-- Nội dung sẽ được chèn vào đây bằng JS -->
         </div>
 
     </main>
@@ -74,7 +74,7 @@
 
             const { tripId, startTime, endTime, totalTripDuration, vehicleRunningDuration, midRoutePassengers, stopHistory } = tripData;
             
-            // Timeline Bar
+            // Thanh tiến trình
             let timelineHTML = '';
             if (totalTripDuration > 0) {
                 const segments = [];
@@ -159,7 +159,7 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Basic Auth Check for Admin
+            // Kiểm tra quyền admin cơ bản
             const userString = sessionStorage.getItem('user');
             if (!userString || JSON.parse(userString).role !== 'admin') {
                 document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50px;">TRUY CẬP BỊ TỪ CHỐI</h1>';
@@ -192,7 +192,7 @@
                 renderReport(tripData);
             });
 
-            // Render the first report by default
+            // Hiển thị báo cáo đầu tiên mặc định
             if(tripKeys.length > 0) {
                 const latestTripKey = tripKeys.sort().reverse()[0];
                 tripSelector.value = latestTripKey;
@@ -203,3 +203,5 @@
     </script>
 </body>
 </html>
+
+    
