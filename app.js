@@ -487,12 +487,13 @@ function initializeApp() {
     
     // Main data fetch interval
     mainInterval = setInterval(async () => {
-      if (state.tripState === 'ready') return;
+      // Don't fetch if trip isn't active, to avoid unnecessary calls
+      if (state.tripState === 'ready' || state.tripState === 'check-in' || state.tripState === 'checking-out' ) return;
+
       try {
         const response = await fetch(`${API_BASE}/status`);
         if (!response.ok) {
             console.warn(`Lỗi kết nối backend: ${response.status}.`);
-            // Don't switch to demo mode automatically
             addLog(`Lỗi kết nối backend, không nhận được dữ liệu.`, 'WARNING');
         } else {
             const data = await response.json();
@@ -543,6 +544,17 @@ function initializeApp() {
     if (elements.mockDataButton) {
         elements.mockDataButton.addEventListener('click', mockDataGenerator);
     }
+    
+    // Nav links
+    document.querySelectorAll('nav a[data-target]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href');
+            if (targetId && targetId !== '#') {
+                window.location.href = targetId;
+            }
+        });
+    });
 }
 
 function mockDataGenerator() {
@@ -552,7 +564,7 @@ function mockDataGenerator() {
     const newGetOff = (state.counts.getOn > state.counts.getOff) && Math.random() > 0.6 ? 1 : 0;
 
     if (newGetOn === 0 && newGetOff === 0 && state.counts.getOn > 0) { // Ensure there's some activity if possible
-        mockDataGenerator(); // try again
+        // try again on next interval
         return;
     }
     
