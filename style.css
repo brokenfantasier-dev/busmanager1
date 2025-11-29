@@ -1,23 +1,23 @@
 :root {
-  --background: 222 47% 11%;
+  --background: 222 47% 15%;
   --foreground: 210 40% 98%;
-  --card: 222 47% 15%;
+  --card: 222 47% 11%;
   --card-foreground: 210 40% 98%;
   --popover: 222 47% 11%;
   --popover-foreground: 210 40% 98%;
-  --primary: 173 98% 50%;
+  --primary: 195 100% 50%;
   --primary-foreground: 222 47% 11%;
-  --secondary: 217 33% 17%;
+  --secondary: 217 33% 22%;
   --secondary-foreground: 210 40% 98%;
   --muted: 217 33% 17%;
   --muted-foreground: 215 20% 65%;
-  --accent: 217 33% 17%;
+  --accent: 217 33% 25%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
   --border: 217 33% 25%;
   --input: 217 33% 25%;
-  --ring: 173 98% 50%;
+  --ring: 195 100% 50%;
   --radius: 0.5rem;
 }
 
@@ -252,7 +252,7 @@ main {
 
 /* --- Card Component --- */
 .card {
-  background-color: transparent;
+  background-color: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   overflow: hidden;
@@ -324,6 +324,7 @@ main {
   background-color: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
   cursor: not-allowed;
+  opacity: 0.5;
 }
 #checkinButton {
   background-color: hsl(var(--primary));
@@ -370,9 +371,9 @@ main {
     animation: pulse-text 1.5s infinite;
 }
 #countdown-panel {
-    background-color: hsl(var(--background));
+    background-color: hsl(var(--card));
     border-radius: calc(var(--radius) - 2px);
-    text-align: center;
+    text-align: left;
 }
 #countdown-panel .card-header {
     padding-bottom: 0.5rem;
